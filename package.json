@@ -5,5 +5,32 @@
   "main": "src/index.js",
   "author": "Kieran Mann <kieran.mann@o8t.com>",
   "license": "UNLICENSED",
-  "private": false
+  "private": false,
+  "scripts": {
+    "build": "vite build",
+    "compile": "tsc -b .",
+    "test": "vitest",
+    "test:watch": "yarn test",
+    "start:dev": "vite",
+    "autoformat": "yarn autoformat:files .",
+    "autoformat:files": "prettier --write --list-different",
+    "autoformat:check": "prettier --check .",
+    "static-analysis": "yarn autoformat:check && yarn lint"
+  },
+  "devDependencies": {
+    "@hono/vite-build": "^1.2.1",
+    "@hono/vite-dev-server": "^0.18.0",
+    "@types/node": "20",
+    "prettier": "^2.4.1",
+    "typescript": "5.4.5",
+    "undici": "^7.2.1",
+    "vite": "^5.4.6",
+    "vitest": "^2.1.1"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.16",
+    "ioredis": "^5.4.2",
+    "reflect-metadata": "0.2.2"
+  }
 }

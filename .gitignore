@@ -1,0 +1,4 @@
+# build outputs
+dist/
+# dependencies, not to be checked in
+node_modules/

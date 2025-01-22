@@ -1,0 +1,47 @@
+{
+    "compilerOptions": {
+        /* Basic Options */
+        "incremental": true,
+        "composite": true,
+        "target": "es2021",
+        "module": "CommonJS",
+        "baseUrl": ".",
+        "rootDir": ".",
+        "outDir": "dist",
+        "noEmitOnError": true,
+        "declaration": true,
+        "sourceMap": true,
+        "declarationMap": true,
+        "allowJs": false,
+        "jsx": "react",
+        /* Strict Type-Checking Options */
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        /* Additional Checks */
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        /* Module Resolution Options */
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        /* Experimental Options */
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        /* Advanced Options */
+        "forceConsistentCasingInFileNames": true,
+        "noErrorTruncation": true,
+        "skipLibCheck": true,
+        "lib": ["ESNext", "DOM.Iterable"],
+        "types": ["node"]
+    },
+    "include": ["src", "tests"],
+    "exclude": ["**/dist", "dist", "build", "node_modules", "**/node_modules"]
+}
