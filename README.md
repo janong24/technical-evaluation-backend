@@ -13,7 +13,7 @@ roles.
     code they submit. Make sure that you understand all code that you are submitting and are prepared to
     speak to it
 -   Evaluated on code style, best practices
-    -   Git commit history
+    -   Git commit history, clarity of commit messages
     -   How readable/maintainable code is
     -   Adherence to the style set out in the project scaffolding
     -   Type-safety and Typescript best practice
