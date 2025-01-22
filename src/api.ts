@@ -9,6 +9,7 @@ type Bindings = HttpBindings;
 const honoApp = new Hono<{ Bindings: Bindings }>();
 
 const container = getAppContainer();
+const fileStorage = container.resolve<FileStorage>(FileStorageToken);
 
 export const app = honoApp
     .post('/upload/:fileName', async (c) => {
@@ -22,16 +23,13 @@ export const app = honoApp
         const fileName = c.req.param('fileName');
         console.log('Uploading file...', fileName);
 
-        const fileStorage = container.resolve<FileStorage>(FileStorageToken);
 
         await fileStorage.uploadFile(uploadStream, fileName, 10_000_000, 4);
 
         return c.json({ ok: true });
     })
-    .get('/download/:fileName/', async (c) => {
+    .get('/download/:fileName', async (c) => {
         const fileName = c.req.param('fileName');
-
-        const fileStorage = container.resolve<FileStorage>(FileStorageToken);
 
         const downloadContents = await fileStorage.downloadFile(fileName, 4);
 
