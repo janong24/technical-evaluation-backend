@@ -1,14 +1,14 @@
-import { testClient } from "hono/testing";
-import { describe, it } from "vitest";
-import { app } from "./api";
+import { testClient } from 'hono/testing';
+import { describe, it } from 'vitest';
+import { app } from './api';
 
-describe("API", () => {
-  const client = testClient(app);
+describe('API', () => {
+    const client = testClient(app);
 
-  it("returns 422 if no body is included", async ({ expect }) => {
-    const fileName = 'test-small-file.txt';
-    const res = await client.upload[':fileName'].$post({ param: { fileName } });
+    it('returns 422 if no body is included', async ({ expect }) => {
+        const fileName = 'test-small-file.txt';
+        const res = await client.upload[':fileName'].$post({ param: { fileName } });
 
-    expect(res.status).toBe(422);
-  });
+        expect(res.status).toBe(422);
+    });
 });

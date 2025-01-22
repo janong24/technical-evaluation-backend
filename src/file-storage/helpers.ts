@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import crypto from 'node:crypto';
 
 type BufferLike = Uint8Array | DataView | Buffer;
 
@@ -9,20 +9,16 @@ type BufferLike = Uint8Array | DataView | Buffer;
  * portion of the potentially-shared underlying mem
  */
 function toDataView(data: BufferLike): DataView | Uint8Array {
-  if (data instanceof Buffer) {
-    const bufferPoolMem = data.buffer;
-    const binaryLikeView = new DataView(
-      bufferPoolMem,
-      data.byteOffset,
-      data.byteLength
-    );
-    return binaryLikeView;
-  }
+    if (data instanceof Buffer) {
+        const bufferPoolMem = data.buffer;
+        const binaryLikeView = new DataView(bufferPoolMem, data.byteOffset, data.byteLength);
+        return binaryLikeView;
+    }
 
-  return data;
+    return data;
 }
 
 export function computeChecksum(data: BufferLike): string {
-  const dataView = toDataView(data);
-  return crypto.createHash("sha1").update(dataView).digest("hex");
+    const dataView = toDataView(data);
+    return crypto.createHash('sha1').update(dataView).digest('hex');
 }

@@ -1,3 +1,3 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 
 export { app as default } from './api';

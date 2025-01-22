@@ -1,32 +1,32 @@
 {
-  "name": "o8t-backend-challenge",
-  "version": "1.0.0",
-  "description": "Backend coding challenge for interviews with omniscient neurotechnology",
-  "main": "src/index.js",
-  "author": "Kieran Mann <kieran.mann@o8t.com>",
-  "license": "UNLICENSED",
-  "private": false,
-  "scripts": {
-    "build": "vite build",
-    "typecheck": "tsc -b .",
-    "test": "vitest",
-    "dev": "vite",
-    "autoformat": "prettier --write --list-different ."
-  },
-  "devDependencies": {
-    "@hono/vite-build": "^1.2.1",
-    "@hono/vite-dev-server": "^0.18.0",
-    "@types/node": "20",
-    "@vitest/coverage-v8": "2.1.8",
-    "prettier": "^2.4.1",
-    "typescript": "5.4.5",
-    "vite": "^5.4.6",
-    "vitest": "^2.1.1"
-  },
-  "dependencies": {
-    "@hono/node-server": "^1.13.7",
-    "hono": "^4.6.16",
-    "reflect-metadata": "0.2.2",
-    "tsyringe": "^4.8.0"
-  }
+    "name": "o8t-backend-challenge",
+    "version": "1.0.0",
+    "description": "Backend coding challenge for interviews with omniscient neurotechnology",
+    "main": "src/index.js",
+    "author": "Kieran Mann <kieran.mann@o8t.com>",
+    "license": "UNLICENSED",
+    "private": false,
+    "scripts": {
+        "build": "vite build",
+        "typecheck": "tsc -b .",
+        "test": "vitest",
+        "dev": "vite",
+        "autoformat": "prettier --write --list-different ."
+    },
+    "devDependencies": {
+        "@hono/vite-build": "^1.2.1",
+        "@hono/vite-dev-server": "^0.18.0",
+        "@types/node": "20",
+        "@vitest/coverage-v8": "2.1.8",
+        "prettier": "^2.4.1",
+        "typescript": "5.4.5",
+        "vite": "^5.4.6",
+        "vitest": "^2.1.1"
+    },
+    "dependencies": {
+        "@hono/node-server": "^1.13.7",
+        "hono": "^4.6.16",
+        "reflect-metadata": "0.2.2",
+        "tsyringe": "^4.8.0"
+    }
 }

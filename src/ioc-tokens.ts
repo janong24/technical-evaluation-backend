@@ -1,2 +1,2 @@
-export const StorageBackendToken = Symbol("StorageBackend");
-export const FileStorageToken = Symbol("FileStorage");
+export const StorageBackendToken = Symbol('StorageBackend');
+export const FileStorageToken = Symbol('FileStorage');
