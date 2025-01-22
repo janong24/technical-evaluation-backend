@@ -11,7 +11,7 @@ const honoApp = new Hono<{ Bindings: Bindings }>();
 const container = getAppContainer();
 
 export const app = honoApp
-  .post("/upload/:fileName/", async (c) => {
+  .post("/upload/:fileName", async (c) => {
     console.log('Handling request');
     const uploadStream = c.req.raw.body;
 

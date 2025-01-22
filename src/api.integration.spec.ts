@@ -7,7 +7,7 @@ describe("API", () => {
 
   it("returns 422 if no body is included", async ({ expect }) => {
     const fileName = 'test-small-file.txt';
-    const res = await client.upload[':fileName'].index.$post({ param: { fileName } });
+    const res = await client.upload[':fileName'].$post({ param: { fileName } });
 
     expect(res.status).toBe(422);
   });

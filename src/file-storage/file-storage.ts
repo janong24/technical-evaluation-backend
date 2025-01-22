@@ -26,19 +26,35 @@ export interface FileStorage {
    * storage backend
    */
   downloadFile(fileName: string, _parallel?: number): Promise<Buffer>;
+
+  /**
+   * List uploaded files is primarily used in unit tests and would be a method for debugging. Therefore, it
+   * does not need to be highly performant (for example might use `SCAN` or `KEYS` with a redis implementation).
+   */
+  listUploadedFiles(): Promise<string[]>;
 }
 
 @injectable()
 export class AppFileStorage implements FileStorage {
   constructor(@inject(StorageBackendToken) private backend: StorageBackend) {
-    console.log('TODO: implement AppFileStorage', this.backend);
+    console.log("TODO: implement AppFileStorage", this.backend);
   }
 
-  public async uploadFile(_fileStream: ReadableStream<Uint8Array> | ReadStream, _fileName: string, _chunkSize: number, _parallel: number): Promise<void> {
-      
+  public async uploadFile(
+    _fileStream: ReadableStream<Uint8Array> | ReadStream,
+    _fileName: string,
+    _chunkSize: number,
+    _parallel: number
+  ): Promise<void> {}
+
+  public async downloadFile(
+    fileName: string,
+    _parallel: number
+  ): Promise<Buffer> {
+    throw new Error(`File ${fileName} not found`);
   }
 
-  public async downloadFile(fileName: string, _parallel: number): Promise<Buffer> {
-    throw new Error(`File ${fileName} not found`)
+  public async listUploadedFiles(): Promise<string[]> {
+    return [];
   }
 }
