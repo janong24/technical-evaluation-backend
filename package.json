@@ -1,0 +1,9 @@
+{
+  "name": "o8t-backend-challenge",
+  "version": "1.0.0",
+  "description": "Backend coding challenge for interviews with omniscient neurotechnology",
+  "main": "src/index.js",
+  "author": "Kieran Mann <kieran.mann@o8t.com>",
+  "license": "UNLICENSED",
+  "private": false
+}
