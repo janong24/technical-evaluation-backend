@@ -8,6 +8,9 @@ import { StorageBackendToken } from '../ioc-tokens';
 export interface FileStorage {
     /**
      * Upload file should handle a web standards ReadableStream and put the file into the storage backend.
+     * 
+     * Chunk size is a parameter that should be used to determine the size of "chunks" of the file to store in
+     * the storagebackend.
      *
      * Note: parallel is a "bonus" feature that should control the number of parallel requests made to the
      * storage backend
