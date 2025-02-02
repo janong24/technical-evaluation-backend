@@ -165,47 +165,55 @@ export class AppFileStorage implements FileStorage {
         }
     }
 
-    public async downloadFile(fileName: string, _parallel: number): Promise<Buffer> {
-        // Wait a moment to ensure all data is stored
-        await new Promise(resolve => setTimeout(resolve, 100));
-
+    public async downloadFile(fileName: string, _parallel: number = 1): Promise<Buffer> {
+        // Ensure parallel is at least 1
+        // const parallel = Math.max(1, _parallel || 1);
+        
         await this.checkMemoryUsage();
-
+    
         console.log('Download - Starting for:', fileName);
         console.log('Download - Looking for metadata at:', `${METADATA_PREFIX}${fileName}`);
-
+    
         // Get metadata
         const metaStr = await this.backend.get(`${METADATA_PREFIX}${fileName}`);
         if (!metaStr) {
             throw new Error(`File ${fileName} not found`);
         }
         console.log('Download - Raw metadata string:', metaStr);
-
+    
         const metadata: FileMetadata = JSON.parse(metaStr);
         console.log('Download - Parsed metadata:', metadata);
-
+    
         // Verify metadata fields
         if (!metadata.totalChunks || metadata.totalChunks <= 0) {
             throw new Error('Invalid chunk count in metadata');
         }
         console.log(`Download - Will attempt to get ${metadata.totalChunks} chunks`);
-
+    
         const chunks: Buffer[] = [];
-
+    
         try {
             console.log('Download - Starting chunk retrieval loop');
             const totalChunks = metadata.totalChunks;
             let currentChunk = 0;
-                    // Download chunks with parallel processing
+    
+            // Download chunks with parallel processing
             while (currentChunk < totalChunks) {
                 await this.checkMemoryUsage();
                 
-                const batchPromises = [];
-                const batchEnd = Math.min(currentChunk + _parallel, totalChunks);
-
+                // Ensure we don't exceed total chunks
+                const remainingChunks = totalChunks - currentChunk;
+                const batchSize = Math.min(_parallel, remainingChunks);
+                const batchEnd = currentChunk + batchSize;
+    
+                if (batchSize <= 0) {
+                    break;
+                }
+    
                 console.log(`Download - Processing batch from ${currentChunk} to ${batchEnd - 1}`);
                 
                 // Create batch of parallel requests
+                const batchPromises = [];
                 for (let i = currentChunk; i < batchEnd; i++) {
                     const chunkKey = `${CHUNK_PREFIX}${fileName}:${i}`;
                     console.log('Download - Requesting chunk:', chunkKey);
@@ -226,14 +234,22 @@ export class AppFileStorage implements FileStorage {
                 
                 // Store chunks in order
                 for (const { data } of batchResults) {
+                    if (!data || data.length === 0) {
+                        throw new Error(`Empty chunk received for ${fileName}`);
+                    }
                     chunks.push(data);
                 }
-
+    
                 currentChunk = batchEnd;
             }
             
             // Combine chunks and verify checksum
             const completeBuffer = Buffer.concat(chunks);
+            
+            if (completeBuffer.length === 0) {
+                throw new Error(`No data retrieved for ${fileName}`);
+            }
+    
             const downloadedChecksum = computeChecksum(completeBuffer);
             console.log('Download - Retrieved data length:', completeBuffer.length);
             console.log('Download - Computed checksum:', downloadedChecksum);
@@ -241,7 +257,7 @@ export class AppFileStorage implements FileStorage {
             console.log('Download - First few bytes:', completeBuffer.slice(0, 20));
             
             if (downloadedChecksum !== metadata.checksum) {
-                throw new Error(`Checksum mismatch for ${fileName}`);
+                throw new Error(`Checksum mismatch for ${fileName}. Expected ${metadata.checksum} but got ${downloadedChecksum}`);
             }
             
             return completeBuffer;
