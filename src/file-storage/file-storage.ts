@@ -167,7 +167,7 @@ export class AppFileStorage implements FileStorage {
 
     public async downloadFile(fileName: string, _parallel: number = 1): Promise<Buffer> {
         // Ensure parallel is at least 1
-        // const parallel = Math.max(1, _parallel || 1);
+        const parallel = Math.max(1, _parallel || 1);
         
         await this.checkMemoryUsage();
     
@@ -203,7 +203,7 @@ export class AppFileStorage implements FileStorage {
                 
                 // Ensure we don't exceed total chunks
                 const remainingChunks = totalChunks - currentChunk;
-                const batchSize = Math.min(_parallel, remainingChunks);
+                const batchSize = Math.min(parallel, remainingChunks);
                 const batchEnd = currentChunk + batchSize;
     
                 if (batchSize <= 0) {
