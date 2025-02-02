@@ -56,6 +56,9 @@ describe('FileStorage', () => {
         // Upload the file
         await fileStorage.uploadFile(fileReadable, fileName, 256);
 
+        // Wait a moment to ensure all data is saved
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Download the file to a new location
         const downloadedBuffer = await fileStorage.downloadFile('testFile.txt');
         const downloadedContent = downloadedBuffer.toString('utf8');
