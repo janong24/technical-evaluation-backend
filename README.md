@@ -23,6 +23,7 @@ If you do choose to use an LLM, make sure that you understand all code that you 
 prepared to speak to it
 
 Your submission will be evaluated on code style, best practices so consider the following as you work:
+
 -   Git commit history, clarity of commit messages
 -   How readable/maintainable code is
 -   Adherence to the style set out in the project scaffolding

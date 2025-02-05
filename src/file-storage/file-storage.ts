@@ -10,7 +10,7 @@ import { computeChecksum } from './helpers';
 const FILE_LIST_KEY = 'uploaded_files';
 const CHUNK_PREFIX = 'chunk:';
 const METADATA_PREFIX = 'meta:';
-const MAX_CHUNK_SIZE = 512 * 1024 *1024; // 512MB (valkey limit)
+const MAX_CHUNK_SIZE = 512 * 1024 * 1024; // 512MB (valkey limit)
 const MEMORY_THRESHOLD = 0.9; // 90% of memory usage
 
 interface FileMetadata {
@@ -25,7 +25,7 @@ interface FileMetadata {
 export interface FileStorage {
     /**
      * Upload file should handle a web standards ReadableStream and put the file into the storage backend.
-     * 
+     *
      * Chunk size is a parameter that should be used to determine the size of "chunks" of the file to store in
      * the storagebackend.
      *
@@ -61,7 +61,7 @@ export class AppFileStorage implements FileStorage {
     private async checkMemoryUsage(): Promise<void> {
         const usage = process.memoryUsage();
         const heapRatio = usage.heapUsed / usage.heapTotal;
-        
+
         if (heapRatio > MEMORY_THRESHOLD) {
             throw new Error('Memory usage too high, try again later');
         }
@@ -79,9 +79,10 @@ export class AppFileStorage implements FileStorage {
         }
 
         // Get reader from stream
-        const reader = 'getReader' in _fileStream 
-            ? _fileStream.getReader() 
-            : createWebStreamReader(_fileStream as ReadStream);
+        const reader =
+            'getReader' in _fileStream
+                ? _fileStream.getReader()
+                : createWebStreamReader(_fileStream as ReadStream);
 
         let totalSize = 0;
         let chunkIndex = 0;
@@ -90,15 +91,15 @@ export class AppFileStorage implements FileStorage {
         try {
             while (true) {
                 await this.checkMemoryUsage();
-                
+
                 const { done, value } = await reader.read();
-                
+
                 if (value) {
                     const chunk = Buffer.from(value);
                     allData.push(chunk);
                     totalSize += chunk.length;
                 }
-                
+
                 if (done) break;
             }
 
@@ -118,16 +119,14 @@ export class AppFileStorage implements FileStorage {
             // Store chunks with parallel processing
             const pendingWrites: Promise<void>[] = [];
 
-            for (let i = 0; i < chunks.length; i++) {  // Using regular for loop
-                const writePromise = this.backend.set(
-                    `${CHUNK_PREFIX}${_fileName}:${i}`,
-                    chunks[i]
-                );
+            for (let i = 0; i < chunks.length; i++) {
+                // Using regular for loop
+                const writePromise = this.backend.set(`${CHUNK_PREFIX}${_fileName}:${i}`, chunks[i]);
                 pendingWrites.push(writePromise);
-                
+
                 // Update metadata count
                 chunkIndex = i + 1;
-                
+
                 if (pendingWrites.length >= _parallel) {
                     await Promise.all(pendingWrites.splice(0, _parallel));
                 }
@@ -140,18 +139,14 @@ export class AppFileStorage implements FileStorage {
                 _chunkSize,
                 totalSize,
                 checksum,
-                createdAt: Date.now()
+                createdAt: Date.now(),
             };
-            
-            await this.backend.set(
-                `${METADATA_PREFIX}${_fileName}`,
-                JSON.stringify(metadata)
-            );
-            
+
+            await this.backend.set(`${METADATA_PREFIX}${_fileName}`, JSON.stringify(metadata));
+
             // Add to file list
             await this.backend.rPush(FILE_LIST_KEY, _fileName);
-            await new Promise(resolve => setTimeout(resolve, 0));
-            
+            await new Promise((resolve) => setTimeout(resolve, 0));
         } catch (error) {
             // Attempt cleanup on failure
             for (let i = 0; i < chunkIndex; i++) {
@@ -168,50 +163,50 @@ export class AppFileStorage implements FileStorage {
     public async downloadFile(fileName: string, _parallel: number = 1): Promise<Buffer> {
         // Ensure parallel is at least 1
         const parallel = Math.max(1, _parallel || 1);
-        
+
         await this.checkMemoryUsage();
-    
+
         console.log('Download - Starting for:', fileName);
         console.log('Download - Looking for metadata at:', `${METADATA_PREFIX}${fileName}`);
-    
+
         // Get metadata
         const metaStr = await this.backend.get(`${METADATA_PREFIX}${fileName}`);
         if (!metaStr) {
             throw new Error(`File ${fileName} not found`);
         }
         console.log('Download - Raw metadata string:', metaStr);
-    
+
         const metadata: FileMetadata = JSON.parse(metaStr);
         console.log('Download - Parsed metadata:', metadata);
-    
+
         // Verify metadata fields
         if (!metadata.totalChunks || metadata.totalChunks <= 0) {
             throw new Error('Invalid chunk count in metadata');
         }
         console.log(`Download - Will attempt to get ${metadata.totalChunks} chunks`);
-    
+
         const chunks: Buffer[] = [];
-    
+
         try {
             console.log('Download - Starting chunk retrieval loop');
             const totalChunks = metadata.totalChunks;
             let currentChunk = 0;
-    
+
             // Download chunks with parallel processing
             while (currentChunk < totalChunks) {
                 await this.checkMemoryUsage();
-                
+
                 // Ensure we don't exceed total chunks
                 const remainingChunks = totalChunks - currentChunk;
                 const batchSize = Math.min(parallel, remainingChunks);
                 const batchEnd = currentChunk + batchSize;
-    
+
                 if (batchSize <= 0) {
                     break;
                 }
-    
+
                 console.log(`Download - Processing batch from ${currentChunk} to ${batchEnd - 1}`);
-                
+
                 // Create batch of parallel requests
                 const batchPromises = [];
                 for (let i = currentChunk; i < batchEnd; i++) {
@@ -227,11 +222,11 @@ export class AppFileStorage implements FileStorage {
                         })()
                     );
                 }
-                
+
                 // Process batch results
                 const batchResults = await Promise.all(batchPromises);
                 batchResults.sort((a, b) => a.index - b.index);
-                
+
                 // Store chunks in order
                 for (const { data } of batchResults) {
                     if (!data || data.length === 0) {
@@ -239,29 +234,30 @@ export class AppFileStorage implements FileStorage {
                     }
                     chunks.push(data);
                 }
-    
+
                 currentChunk = batchEnd;
             }
-            
+
             // Combine chunks and verify checksum
             const completeBuffer = Buffer.concat(chunks);
-            
+
             if (completeBuffer.length === 0) {
                 throw new Error(`No data retrieved for ${fileName}`);
             }
-    
+
             const downloadedChecksum = computeChecksum(completeBuffer);
             console.log('Download - Retrieved data length:', completeBuffer.length);
             console.log('Download - Computed checksum:', downloadedChecksum);
             console.log('Download - Expected checksum:', metadata.checksum);
             console.log('Download - First few bytes:', completeBuffer.slice(0, 20));
-            
+
             if (downloadedChecksum !== metadata.checksum) {
-                throw new Error(`Checksum mismatch for ${fileName}. Expected ${metadata.checksum} but got ${downloadedChecksum}`);
+                throw new Error(
+                    `Checksum mismatch for ${fileName}. Expected ${metadata.checksum} but got ${downloadedChecksum}`
+                );
             }
-            
+
             return completeBuffer;
-            
         } catch (error) {
             // Clear chunks array to free memory
             chunks.length = 0;
@@ -281,18 +277,20 @@ function createWebStreamReader(nodeStream: ReadStream) {
             return new Promise((resolve, reject) => {
                 nodeStream.once('data', (chunk) => {
                     // Ensure chunk is converted to Uint8Array
-                    const value = Buffer.isBuffer(chunk) ? new Uint8Array(chunk) : new Uint8Array(Buffer.from(chunk));
+                    const value = Buffer.isBuffer(chunk)
+                        ? new Uint8Array(chunk)
+                        : new Uint8Array(Buffer.from(chunk));
                     resolve({ done: false, value });
                 });
-                
+
                 nodeStream.once('end', () => {
                     resolve({ done: true });
                 });
-                
+
                 nodeStream.once('error', (err) => {
                     reject(err);
                 });
             });
-        }
+        },
     };
 }

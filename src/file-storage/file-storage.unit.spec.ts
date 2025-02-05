@@ -57,7 +57,7 @@ describe('FileStorage', () => {
         await fileStorage.uploadFile(fileReadable, fileName, 256);
 
         // Wait a moment to ensure all data is saved
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         // Download the file to a new location
         const downloadedBuffer = await fileStorage.downloadFile('testFile.txt');
@@ -116,7 +116,7 @@ describe('Edge Cases', () => {
 
         expect(downloaded.toString()).toBe(content);
     });
-    
+
     it('should handle concurrent access to same file', async ({ expect }) => {
         const fileName = 'concurrent-test.txt';
         const content = 'Test content for concurrent access';
@@ -128,11 +128,11 @@ describe('Edge Cases', () => {
         // Attempt concurrent downloads
         const downloads = await Promise.all([
             fileStorage.downloadFile(fileName, 1),
-            fileStorage.downloadFile(fileName, 1)
+            fileStorage.downloadFile(fileName, 1),
         ]);
 
         // Verify all downloads match
-        downloads.forEach(downloaded => {
+        downloads.forEach((downloaded) => {
             expect(downloaded.toString()).toBe(content);
         });
     });
@@ -157,7 +157,7 @@ describe('Metadata and Audit Trail', () => {
         backend = new TestStorageBackend();
         fileStorage = new AppFileStorage(backend);
     });
-    
+
     it('should store correct file metadata on upload', async ({ expect }) => {
         const fileName = 'patient-scan.dat';
         const content = 'Test medical data content';
@@ -167,13 +167,13 @@ describe('Metadata and Audit Trail', () => {
         // Record upload time
         const uploadStartTime = Date.now();
         await fileStorage.uploadFile(fileReadable, fileName, chunkSize, 1);
-        
+
         // Get metadata directly from backend
         const metaStr = await backend.get(`meta:${fileName}`);
         expect(metaStr).not.toBeNull();
-        
+
         const metadata = JSON.parse(metaStr!);
-        
+
         // Verify all required metadata fields exist
         expect(metadata).toHaveProperty('_fileName', fileName);
         expect(metadata).toHaveProperty('totalChunks');
@@ -185,7 +185,7 @@ describe('Metadata and Audit Trail', () => {
         // Verify timestamps are reasonable
         expect(metadata.createdAt).toBeGreaterThanOrEqual(uploadStartTime);
         expect(metadata.createdAt).toBeLessThanOrEqual(Date.now());
-        
+
         // Verify size matches content
         expect(metadata.totalSize).toBe(Buffer.from(content).length);
     });
@@ -193,7 +193,7 @@ describe('Metadata and Audit Trail', () => {
     it('should maintain a list of all uploaded files', async ({ expect }) => {
         const files = ['scan1.dat', 'scan2.dat', 'scan3.dat'];
         const uploadTimes = [];
-        
+
         // Upload multiple files
         for (const fileName of files) {
             const fileReadable = await stringToReadableStream(`Content for ${fileName}`);
@@ -219,21 +219,21 @@ describe('Metadata and Audit Trail', () => {
         const fileName = 'integrity-test.dat';
         const content = 'Test content for metadata integrity';
         const fileReadable = await stringToReadableStream(content);
-        
+
         // Upload file
         await fileStorage.uploadFile(fileReadable, fileName, 1024, 1);
-        
+
         // Get initial metadata
         const initialMetaStr = await backend.get(`meta:${fileName}`);
         const initialMeta = JSON.parse(initialMetaStr!);
-        
+
         // Download file
         await fileStorage.downloadFile(fileName, 1);
-        
+
         // Verify metadata hasn't changed after download
         const finalMetaStr = await backend.get(`meta:${fileName}`);
         const finalMeta = JSON.parse(finalMetaStr!);
-        
+
         expect(finalMeta).toEqual(initialMeta);
     });
 
@@ -241,20 +241,20 @@ describe('Metadata and Audit Trail', () => {
         const fileName = 'chunk-ref-test.dat';
         const content = 'Test content for chunk reference verification';
         const fileReadable = await stringToReadableStream(content);
-        
+
         await fileStorage.uploadFile(fileReadable, fileName, 1024, 1);
-        
+
         // Get metadata to know number of chunks
         const metaStr = await backend.get(`meta:${fileName}`);
         const metadata = JSON.parse(metaStr!);
-        
+
         // Verify all chunks exist
         for (let i = 0; i < metadata.totalChunks; i++) {
             const chunkData = await backend.getBuffer(`chunk:${fileName}:${i}`);
             expect(chunkData).not.toBeNull();
             expect(chunkData!.length).toBeGreaterThan(0);
         }
-        
+
         // Verify no extra chunks exist
         const extraChunkData = await backend.getBuffer(`chunk:${fileName}:${metadata.totalChunks}`);
         expect(extraChunkData).toBeNull();
